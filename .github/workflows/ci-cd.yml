@@ -183,31 +183,40 @@ jobs:
         working-directory: ./front
         run: npm test -- --no-watch --code-coverage --browsers=ChromeHeadless
       
-      - name: Analyse SonarQube
+      - name: Analyse SonarQube (Maven pour back-end)
+        working-directory: ./back
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          echo "🔍 Analyse SonarQube du back-end avec Maven..."
+          mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+            -Dsonar.projectKey=ElDucche_Gerez-un-projet-collaboratif-en-int-grant-une-demarche-CI-CD
+      
+      - name: Analyse SonarQube (Scanner CLI pour front-end)
+        working-directory: ./front
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
         run: |
-          echo "🔍 Lancement de l'analyse SonarQube..."
+          echo "🔍 Analyse SonarQube du front-end..."
           
           # Installation de SonarScanner
-          wget -q https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
-          unzip -q sonar-scanner-cli-5.0.1.3006-linux.zip
-          export PATH=$PATH:$(pwd)/sonar-scanner-5.0.1.3006-linux/bin
+          npm install -g sonarqube-scanner
           
-          # Exécution de l'analyse SonarQube
+          # Exécution de l'analyse
           sonar-scanner \
             -Dsonar.projectKey=ElDucche_Gerez-un-projet-collaboratif-en-int-grant-une-demarche-CI-CD \
             -Dsonar.organization=elducche \
-            -Dsonar.projectName=BobApp \
-            -Dsonar.projectVersion=1.0 \
-            -Dsonar.sources=. \
-            -Dsonar.host.url=${SONAR_HOST_URL} \
-            -Dsonar.token=${SONAR_TOKEN}
+            -Dsonar.sources=src \
+            -Dsonar.tests=src \
+            -Dsonar.test.inclusions=**/*.spec.ts \
+            -Dsonar.exclusions=**/node_modules/**,**/*.spec.ts,**/coverage/**,**/dist/** \
+            -Dsonar.typescript.lcov.reportPaths=coverage/bobapp/lcov.info \
+            -Dsonar.host.url=${SONAR_HOST_URL}
       
       - name: Vérification du Quality Gate
         env:
-          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
         run: |
           echo "🚦 Vérification du statut du Quality Gate SonarQube..."
