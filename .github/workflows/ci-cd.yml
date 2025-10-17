@@ -199,9 +199,11 @@ jobs:
           sonar-scanner \
             -Dsonar.projectKey=bobapp \
             -Dsonar.organization=guillaume-leduc \
+            -Dsonar.projectName=BobApp \
+            -Dsonar.projectVersion=1.0 \
             -Dsonar.sources=. \
             -Dsonar.host.url=${SONAR_HOST_URL} \
-            -Dsonar.login=${SONAR_TOKEN}
+            -Dsonar.token=${SONAR_TOKEN}
       
       - name: Vérification du Quality Gate
         env:
