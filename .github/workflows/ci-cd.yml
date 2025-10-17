@@ -198,7 +198,7 @@ jobs:
           # Exécution de l'analyse SonarQube
           sonar-scanner \
             -Dsonar.projectKey=ElDucche_Gerez-un-projet-collaboratif-en-int-grant-une-demarche-CI-CD \
-            -Dsonar.organization=guillaume-leduc \
+            -Dsonar.organization=ElDucche \
             -Dsonar.projectName=BobApp \
             -Dsonar.projectVersion=1.0 \
             -Dsonar.sources=. \
