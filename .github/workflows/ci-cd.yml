@@ -250,7 +250,7 @@ jobs:
           images: ${{ secrets.DOCKERHUB_USERNAME }}/bobapp-backend
           tags: |
             type=ref,event=branch
-            type=sha,prefix={{branch}}-
+            type=sha
             type=raw,value=latest,enable={{is_default_branch}}
       
       - name: Construction et publication de l'image Docker back-end
@@ -271,7 +271,7 @@ jobs:
           images: ${{ secrets.DOCKERHUB_USERNAME }}/bobapp-frontend
           tags: |
             type=ref,event=branch
-            type=sha,prefix={{branch}}-
+            type=sha
             type=raw,value=latest,enable={{is_default_branch}}
       
       - name: Construction et publication de l'image Docker front-end
