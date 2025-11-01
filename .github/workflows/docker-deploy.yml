@@ -1,0 +1,84 @@
+name: Docker Build & Push
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+jobs:
+  docker-build-push:
+    name: Construction et Publication Docker
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    
+    steps:
+      - name: Récupération du code
+        uses: actions/checkout@v3
+      
+      - name: Configuration de Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      
+      - name: Connexion à Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      - name: Extraction des métadonnées pour le back-end
+        id: meta-backend
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/bobapp-backend
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=pr-${{ github.event.pull_request.number }}
+      
+      - name: Construction et publication de l'image Docker back-end
+        uses: docker/build-push-action@v4
+        with:
+          context: ./back
+          file: ./back/Dockerfile
+          push: true
+          tags: ${{ steps.meta-backend.outputs.tags }}
+          labels: ${{ steps.meta-backend.outputs.labels }}
+          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/bobapp-backend:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/bobapp-backend:buildcache,mode=max
+      
+      - name: Extraction des métadonnées pour le front-end
+        id: meta-frontend
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/bobapp-frontend
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=pr-${{ github.event.pull_request.number }}
+      
+      - name: Construction et publication de l'image Docker front-end
+        uses: docker/build-push-action@v4
+        with:
+          context: ./front
+          file: ./front/Dockerfile
+          push: true
+          tags: ${{ steps.meta-frontend.outputs.tags }}
+          labels: ${{ steps.meta-frontend.outputs.labels }}
+          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/bobapp-frontend:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/bobapp-frontend:buildcache,mode=max
+      
+      - name: Résumé de la publication
+        run: |
+          echo "🐳 Images Docker publiées avec succès sur Docker Hub!"
+          echo ""
+          echo "📦 Back-end: ${{ secrets.DOCKERHUB_USERNAME }}/bobapp-backend"
+          echo "📦 Front-end: ${{ secrets.DOCKERHUB_USERNAME }}/bobapp-frontend"
+          echo ""
+          echo "🏷️ Tags Backend:"
+          echo "${{ steps.meta-backend.outputs.tags }}"
+          echo ""
+          echo "🏷️ Tags Frontend:"
+          echo "${{ steps.meta-frontend.outputs.tags }}"
+          echo ""
+          echo "✅ Déploiement prêt!"
