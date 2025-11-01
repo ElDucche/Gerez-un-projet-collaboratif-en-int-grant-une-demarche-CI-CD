@@ -2,10 +2,13 @@ name: Frontend CI
 
 on:
   push:
-    branches: ['**']
+    branches-ignore: [main]
     paths:
       - 'front/**'
-      - '.github/workflows/frontend-ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'front/**'
 
 jobs:
   frontend-validation:
