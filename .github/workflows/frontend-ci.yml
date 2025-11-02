@@ -1,0 +1,93 @@
+name: Frontend CI
+
+on:
+  push:
+    branches-ignore: [main]
+    paths:
+      - 'front/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'front/**'
+
+jobs:
+  frontend-validation:
+    name: Frontend Tests & Validation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          cache: 'npm'
+          cache-dependency-path: front/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: ./front
+        run: |
+          echo "📦 Installing frontend dependencies..."
+          npm ci
+      
+      - name: Run linting
+        working-directory: ./front
+        run: |
+          echo "🔍 Running linting..."
+          if grep -q '"lint"' package.json; then
+            npm run lint
+          else
+            echo "⚠️ No lint script found, skipping..."
+          fi
+        continue-on-error: true
+      
+      - name: Run tests with coverage
+        working-directory: ./front
+        run: |
+          echo "🧪 Running frontend tests with coverage..."
+          npm test -- --no-watch --code-coverage --browsers=ChromeHeadless
+      
+      - name: Verify coverage report generation
+        working-directory: ./front
+        run: |
+          echo "📊 Checking coverage report..."
+          if [ -d "coverage" ]; then
+            echo "✅ Coverage report generated successfully!"
+            ls -la coverage/
+          else
+            echo "❌ Coverage report not found!"
+            exit 1
+          fi
+      
+      - name: Build application
+        working-directory: ./front
+        run: |
+          echo "🏗️ Building frontend application..."
+          npm run build
+      
+      - name: Verify build output
+        working-directory: ./front
+        run: |
+          echo "📦 Checking build output..."
+          if [ -d "dist" ]; then
+            echo "✅ Build successful!"
+            ls -la dist/
+          else
+            echo "❌ Build output not found!"
+            exit 1
+          fi
+      
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage-report
+          path: front/coverage/
+          retention-days: 30
+      
+      - name: Summary
+        run: |
+          echo "✅ Frontend validation completed successfully!"
+          echo "📊 Coverage report available in artifacts"
+          echo "🏗️ Build verification passed"

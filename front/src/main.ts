@@ -10,3 +10,4 @@ if (environment.production) {
 
 platformBrowserDynamic().bootstrapModule(AppModule)
   .catch(err => console.error(err));
+// Test CI pipeline - dim.  2 nov. 2025 14:37:45 CET

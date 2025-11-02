@@ -1,0 +1,65 @@
+name: Docker Build & Push
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+jobs:
+  docker-build-push:
+    name: Construction et Publication Docker
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    
+    steps:
+      - name: Récupération du code
+        uses: actions/checkout@v3
+      
+      - name: Configuration de Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      
+      - name: Connexion à Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      - name: Extraction des métadonnées pour l'application
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/bobapp
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=pr-${{ github.event.pull_request.number }}
+      
+      - name: Construction et publication de l'image Docker complète
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/bobapp:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/bobapp:buildcache,mode=max
+      
+      - name: Résumé de la publication
+        run: |
+          echo "🐳 Image Docker complète publiée avec succès sur Docker Hub!"
+          echo ""
+          echo "📦 Application: ${{ secrets.DOCKERHUB_USERNAME }}/bobapp"
+          echo ""
+          echo "🏷️ Tags:"
+          echo "${{ steps.meta.outputs.tags }}"
+          echo ""
+          echo "🌐 Frontend: http://localhost:80"
+          echo "🔧 Backend API: http://localhost:80/api/"
+          echo "❤️ Health check: http://localhost:80/health"
+          echo ""
+          echo "✅ Déploiement prêt!"
+          echo ""
+          echo "🚀 Pour lancer l'application:"
+          echo "docker run -p 80:80 -p 8080:8080 ${{ secrets.DOCKERHUB_USERNAME }}/bobapp:latest"
