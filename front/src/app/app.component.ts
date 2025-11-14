@@ -4,9 +4,15 @@ import { Joke } from './model/joke.model';
 import { JokesService } from './services/jokes.service';
 
 /**
- * Main application component
- * Test modification to trigger Frontend CI pipeline
- * This will test the complete CI/CD workflow with optimized pipelines
+ * BobApp - Main Application Component
+ * 
+ * CI/CD Pipeline Validation:
+ * - Frontend CI: Linting + Tests + Coverage + Build
+ * - SonarQube: Quality analysis with npm cache
+ * - Docker Deploy: Multi-service smoke tests
+ * 
+ * @author OpenClassrooms P10
+ * @version 1.0.0
  */
 @Component({
   selector: 'app-root',
