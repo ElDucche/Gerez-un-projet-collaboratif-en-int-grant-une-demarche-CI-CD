@@ -10,18 +10,16 @@ La branche `main` est maintenant **protégée** pour garantir la qualité du cod
    - ❌ Push direct interdit sur `main`
    - ✅ Toutes les modifications doivent passer par une Pull Request
 
-2. **Revue de Code Requise**
-   - Minimum **1 approbation** requise
-   - Les anciennes approbations sont invalidées si nouveaux commits
-
-3. **CI/CD Obligatoire**
+2. **CI/CD Automatique (Recommandé)**
    
-   Les 3 workflows suivants doivent **PASSER** avant merge:
-   - ✅ **Backend CI** - Tests backend + couverture
-   - ✅ **Frontend CI** - Tests frontend + build
-   - ✅ **SonarQube Analysis** - Analyse qualité du code
+   Les workflows se déclenchent automatiquement sur PR:
+   - ✅ **Backend CI** - Si fichiers `back/**` modifiés
+   - ✅ **Frontend CI** - Si fichiers `front/**` modifiés
+   - ✅ **SonarQube Analysis** - Après CI successful
+   
+   ⚠️ **Attention:** Les checks ne sont pas obligatoires pour le merge, mais ils **s'exécutent automatiquement** pour valider votre code.
 
-4. **Protection Stricte**
+3. **Protection Stricte**
    - ❌ Force push interdit
    - ❌ Suppression de la branche interdite
    - ✅ Appliqué même aux administrateurs
@@ -56,14 +54,15 @@ gh pr create --title "feat: ma nouvelle fonctionnalité" --body "Description..."
 
 Ou via l'interface GitHub: https://github.com/ElDucche/Gerez-un-projet-collaboratif-en-int-grant-une-demarche-CI-CD/pulls
 
-### 5. Attendre la Validation
+### 5. Vérifier les Checks CI/CD
 
-La PR sera mergeable uniquement si:
+**Important:** Vérifiez que les workflows CI/CD passent avant de merger:
 
-- ✅ Backend CI passe (si fichiers `back/**` modifiés)
-- ✅ Frontend CI passe (si fichiers `front/**` modifiés)  
-- ✅ SonarQube Analysis passe
-- ✅ 1 approbation reçue
+- ✅ **Backend CI** s'exécute si `back/**` modifié
+- ✅ **Frontend CI** s'exécute si `front/**` modifié
+- ✅ **SonarQube Analysis** s'exécute après CI
+
+💡 **Bonne Pratique:** Attendez que tous les checks soient verts avant de merger, même s'ils ne sont pas techniquement obligatoires.
 
 ### 6. Merger
 
