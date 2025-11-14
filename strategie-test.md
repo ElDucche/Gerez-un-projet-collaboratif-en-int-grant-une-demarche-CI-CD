@@ -4,6 +4,8 @@
 
 **Décision:** Implémenter des **smoke tests légers** au lieu de ré-exécuter tous les tests dans docker-deploy.yml
 
+**Statut:** ✅ **VALIDÉ** - Smoke tests opérationnels avec succès (Novembre 2025)
+
 ---
 
 ## 🔍 Contexte Actuel
@@ -82,7 +84,21 @@ Tests légers (30-60s) qui valident uniquement que l'image Docker fonctionne:
 
 Voir modifications dans `docker-deploy.yml`:
 1. Build et export image localement
-2. Smoke tests avec curl
+2. Smoke tests avec curl (60s wait pour Spring Boot startup)
 3. Push uniquement si tests passent
 
-**Date:** Novembre 2024
+### Résultats Finaux (Novembre 2025)
+
+**✅ Tous les smoke tests passent avec succès:**
+- Frontend accessible sur port 80
+- Backend API `/api/joke` fonctionnelle
+- Routing Nginx → Backend opérationnel
+- Image Docker publiée automatiquement sur Docker Hub
+
+**Temps d'exécution:** ~3-4 minutes (dont 60s wait + ~2min build)
+
+**Issues Résolues:**
+1. **Nginx proxy configuration** - Correction du `proxy_pass` pour préserver le préfixe `/api/`
+2. **Spring Boot startup time** - 60s wait suffisant (app démarre en ~2s, marge de sécurité)
+
+**Date:** Novembre 2025
