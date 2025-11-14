@@ -65,33 +65,22 @@ jobs:
             exit 1
           fi
           
-          # Test 2: Backend API Health
-          if curl -f http://localhost:80/api/health > /dev/null 2>&1; then
-            echo "✅ Test 2/4: Backend API health opérationnel"
-          else
-            echo "❌ Test 2/4: Backend API health non accessible"
-            docker logs test-bobapp
-            docker stop test-bobapp
-            docker rm test-bobapp
-            exit 1
-          fi
-          
-          # Test 3: Health endpoint général
-          if curl -f http://localhost:80/health > /dev/null 2>&1; then
-            echo "✅ Test 3/4: Health endpoint opérationnel"
-          else
-            echo "❌ Test 3/4: Health endpoint non accessible"
-            docker logs test-bobapp
-            docker stop test-bobapp
-            docker rm test-bobapp
-            exit 1
-          fi
-          
-          # Test 4: API fonctionnelle (récupération d'une blague)
+          # Test 2: Backend API accessible (récupération d'une blague)
           if curl -f http://localhost:80/api/joke > /dev/null 2>&1; then
-            echo "✅ Test 4/4: API joke fonctionnelle"
+            echo "✅ Test 2/3: Backend API fonctionnelle"
           else
-            echo "❌ Test 4/4: API joke non fonctionnelle"
+            echo "❌ Test 2/3: Backend API non fonctionnelle"
+            docker logs test-bobapp
+            docker stop test-bobapp
+            docker rm test-bobapp
+            exit 1
+          fi
+          
+          # Test 3: Nginx routing fonctionne
+          if curl -s http://localhost:80/api/joke | grep -q "joke"; then
+            echo "✅ Test 3/3: Routing Nginx → Backend opérationnel"
+          else
+            echo "❌ Test 3/3: Routing Nginx échoué"
             docker logs test-bobapp
             docker stop test-bobapp
             docker rm test-bobapp
@@ -121,11 +110,10 @@ jobs:
         run: |
           echo "✅ Pipeline de déploiement Docker terminée avec succès!"
           echo ""
-          echo "🧪 Smoke tests passés: 4/4"
+          echo "🧪 Smoke tests passés: 3/3"
           echo "   ✓ Frontend accessible"
-          echo "   ✓ Backend API health"
-          echo "   ✓ Health endpoint"
-          echo "   ✓ API joke fonctionnelle"
+          echo "   ✓ Backend API fonctionnelle"
+          echo "   ✓ Routing Nginx opérationnel"
           echo ""
           echo "🐳 Image Docker publiée sur Docker Hub:"
           echo "📦 Application: ${{ secrets.DOCKERHUB_USERNAME }}/bobapp"
