@@ -49,8 +49,8 @@ jobs:
           echo "🐳 Démarrage du conteneur pour tests de fumée..."
           docker run -d -p 80:80 -p 8080:8080 --name test-bobapp bobapp:test
           
-          echo "⏳ Attente du démarrage des services (45 secondes)..."
-          sleep 45
+          echo "⏳ Attente du démarrage des services (60 secondes pour Spring Boot)..."
+          sleep 60
           
           echo "🔍 Exécution des tests de fumée..."
           
