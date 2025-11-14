@@ -42,21 +42,6 @@ jobs:
           
           echo "📊 Résumé: Frontend=$FRONTEND_CHANGED, Backend=$BACKEND_CHANGED"
       
-      - name: Configuration JDK 17
-        if: steps.detect-changes.outputs.backend_changed == 'true'
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-      
-      - name: Configuration Node.js
-        if: steps.detect-changes.outputs.frontend_changed == 'true'
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-          cache: 'npm'
-          cache-dependency-path: front/package-lock.json
-      
       - name: Cache des packages SonarQube
         uses: actions/cache@v3
         with:
@@ -64,38 +49,83 @@ jobs:
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
       
-      - name: Installation des dépendances front-end
-        if: steps.detect-changes.outputs.frontend_changed == 'true'
-        working-directory: ./front
-        run: |
-          echo "📦 Installation des dépendances front-end..."
-          npm ci
-      
-      - name: Exécution des tests back-end avec couverture
+      - name: Téléchargement du rapport de couverture back-end
         if: steps.detect-changes.outputs.backend_changed == 'true'
-        working-directory: ./back
-        run: |
-          echo "🧪 Exécution des tests back-end avec couverture..."
-          mvn clean verify
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-coverage-report
+          path: back/target/site/jacoco/
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
       
-      - name: Exécution des tests front-end avec couverture
+      - name: Téléchargement des classes compilées back-end
+        if: steps.detect-changes.outputs.backend_changed == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-compiled-classes
+          path: back/target/
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+      
+      - name: Téléchargement du rapport de couverture front-end
         if: steps.detect-changes.outputs.frontend_changed == 'true'
-        working-directory: ./front
-        run: |
-          echo "🧪 Exécution des tests front-end avec couverture..."
-          npm test -- --no-watch --code-coverage --browsers=ChromeHeadless
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-coverage-report
+          path: front/coverage/
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
       
-      - name: Analyse SonarQube (Maven pour back-end)
+      - name: Vérification des rapports de couverture
+        run: |
+          echo "📊 Vérification des rapports de couverture téléchargés..."
+          
+          if [ "${{ steps.detect-changes.outputs.backend_changed }}" == "true" ]; then
+            if [ -d "back/target/site/jacoco" ]; then
+              echo "✅ Rapport de couverture back-end trouvé"
+              ls -la back/target/site/jacoco/
+            else
+              echo "❌ Rapport de couverture back-end manquant!"
+              exit 1
+            fi
+          fi
+          
+          if [ "${{ steps.detect-changes.outputs.frontend_changed }}" == "true" ]; then
+            if [ -d "front/coverage" ]; then
+              echo "✅ Rapport de couverture front-end trouvé"
+              ls -la front/coverage/
+            else
+              echo "❌ Rapport de couverture front-end manquant!"
+              exit 1
+            fi
+          fi
+      
+      - name: Analyse SonarQube (Scanner CLI pour back-end)
         if: steps.detect-changes.outputs.backend_changed == 'true'
         working-directory: ./back
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
         run: |
-          echo "🔍 Analyse SonarQube du back-end avec Maven..."
-          mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          echo "🔍 Analyse SonarQube du back-end..."
+          
+          # Installation du scanner si nécessaire
+          if ! command -v sonar-scanner &> /dev/null; then
+            echo "📦 Installation de SonarQube Scanner..."
+            wget -q https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-linux.zip
+            unzip -q sonar-scanner-cli-4.8.0.2856-linux.zip
+            export PATH="$PWD/sonar-scanner-4.8.0.2856-linux/bin:$PATH"
+          fi
+          
+          sonar-scanner \
             -Dsonar.projectKey=ElDucche_Gerez-un-projet-collaboratif-en-int-grant-une-demarche-CI-CD \
             -Dsonar.organization=elducche \
-            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.sources=src/main/java \
+            -Dsonar.tests=src/test/java \
+            -Dsonar.java.binaries=target/classes \
+            -Dsonar.java.test.binaries=target/test-classes \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+            -Dsonar.host.url=${SONAR_HOST_URL} \
             -Dsonar.branch.name=${{ github.event.workflow_run.head_branch }}
       
       - name: Analyse SonarQube (Scanner CLI pour front-end)
