@@ -1,8 +1,12 @@
-# BobApp
+# BobApp - CI/CD Optimized
+
+**CI/CD Pipeline avec Smoke Tests et Réutilisation d'Artifacts**
 
 Clone project:
 
 > git clone XXXXX
+
+📊 Voir [strategie-test.md](strategie-test.md) pour la stratégie de tests
 
 ## Front-end 
 
