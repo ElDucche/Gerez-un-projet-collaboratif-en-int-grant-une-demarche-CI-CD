@@ -56,9 +56,9 @@ jobs:
           
           # Test 1: Frontend accessible
           if curl -f http://localhost:80 > /dev/null 2>&1; then
-            echo "✅ Test 1/4: Frontend accessible"
+            echo "✅ Test 1/3: Frontend accessible"
           else
-            echo "❌ Test 1/4: Frontend non accessible"
+            echo "❌ Test 1/3: Frontend non accessible"
             docker logs test-bobapp
             docker stop test-bobapp
             docker rm test-bobapp
