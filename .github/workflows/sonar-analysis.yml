@@ -5,6 +5,7 @@ on:
     workflows: ["Frontend CI", "Backend CI"]
     types: [completed]
     branches: ['**']
+  workflow_dispatch: {}
 
 jobs:
   sonarqube-analysis:
@@ -65,26 +66,25 @@ jobs:
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
       
-      - name: Installation des dépendances front-end
-        if: steps.detect-changes.outputs.frontend_changed == 'true'
-        working-directory: ./front
-        run: |
-          echo "📦 Installation des dépendances front-end..."
-          npm ci
-      
-      - name: Exécution des tests back-end avec couverture
+      - name: Télécharger le rapport coverage back-end (artifact)
         if: steps.detect-changes.outputs.backend_changed == 'true'
-        working-directory: ./back
-        run: |
-          echo "🧪 Exécution des tests back-end avec couverture..."
-          mvn clean verify
-      
-      - name: Exécution des tests front-end avec couverture
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-coverage-report
+          path: back/target/site/jacoco
+
+      - name: Télécharger le rapport coverage front-end (artifact)
         if: steps.detect-changes.outputs.frontend_changed == 'true'
-        working-directory: ./front
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-coverage-report
+          path: front/coverage
+
+      - name: Préparer SonarScanner pour le front (pas de tests)
+        if: steps.detect-changes.outputs.frontend_changed == 'true'
         run: |
-          echo "🧪 Exécution des tests front-end avec couverture..."
-          npm test -- --no-watch --code-coverage --browsers=ChromeHeadless
+          echo "📦 Préparation SonarScanner pour le front-end (réutilisation des rapports)..."
+          npm install -g sonarqube-scanner
       
       - name: Analyse SonarQube (Maven pour back-end)
         if: steps.detect-changes.outputs.backend_changed == 'true'
