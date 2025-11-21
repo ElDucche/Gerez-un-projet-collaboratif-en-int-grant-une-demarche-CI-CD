@@ -5,6 +5,7 @@ on:
     workflows: ["Frontend CI", "Backend CI"]
     types: [completed]
     branches: ['**']
+  workflow_dispatch: {}
 
 jobs:
   sonarqube-analysis:

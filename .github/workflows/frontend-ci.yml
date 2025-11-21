@@ -2,7 +2,7 @@ name: Frontend CI
 
 on:
   push:
-    branches: [main, master, develop]
+    branches-ignore: [main]
     paths:
       - 'front/**'
   pull_request:
