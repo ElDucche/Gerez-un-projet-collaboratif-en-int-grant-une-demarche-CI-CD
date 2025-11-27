@@ -91,3 +91,63 @@ jobs:
           echo "✅ Frontend validation completed successfully!"
           echo "📊 Coverage report available in artifacts"
           echo "🏗️ Build verification passed"
+  
+  sonarqube-frontend:
+    name: SonarQube Frontend Analysis
+    runs-on: ubuntu-latest
+    needs: frontend-validation
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          cache: 'npm'
+          cache-dependency-path: front/package-lock.json
+      
+      - name: Cache SonarQube packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      
+      - name: Install dependencies
+        working-directory: ./front
+        run: |
+          echo "📦 Installing frontend dependencies..."
+          npm ci
+      
+      - name: Run tests with coverage for SonarQube
+        working-directory: ./front
+        run: |
+          echo "🧪 Running frontend tests with coverage for SonarQube..."
+          npm test -- --no-watch --code-coverage --browsers=ChromeHeadless
+      
+      - name: SonarQube Analysis
+        working-directory: ./front
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
+        run: |
+          echo "🔍 Running SonarQube analysis..."
+          npm install -g sonarqube-scanner
+          sonar-scanner \
+            -Dsonar.projectKey=ElDucche_Gerez-un-projet-collaboratif-en-int-grant-une-demarche-CI-CD \
+            -Dsonar.organization=elducche \
+            -Dsonar.sources=src \
+            -Dsonar.tests=src \
+            -Dsonar.test.inclusions=**/*.spec.ts \
+            -Dsonar.exclusions=**/node_modules/**,**/*.spec.ts,**/coverage/**,**/dist/** \
+            -Dsonar.typescript.lcov.reportPaths=coverage/bobapp/lcov.info \
+            -Dsonar.host.url=${SONAR_HOST_URL}
+      
+      - name: Summary
+        run: |
+          echo "✅ SonarQube frontend analysis completed!"
+          echo "📊 Results available on SonarCloud.io"

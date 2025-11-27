@@ -96,3 +96,50 @@ jobs:
           echo "✅ Backend validation completed successfully!"
           echo "📊 Coverage report available in artifacts"
           echo "📦 JAR package created and uploaded"
+  
+  sonarqube-backend:
+    name: SonarQube Backend Analysis
+    runs-on: ubuntu-latest
+    needs: backend-validation
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Set up JDK 17 (for SonarQube Scanner)
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+      
+      - name: Cache SonarQube packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      
+      - name: Run tests with coverage for SonarQube
+        working-directory: ./back
+        run: |
+          echo "🧪 Running backend tests with coverage for SonarQube..."
+          mvn clean verify
+      
+      - name: SonarQube Analysis
+        working-directory: ./back
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          echo "🔍 Running SonarQube analysis..."
+          mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+            -Dsonar.projectKey=ElDucche_Gerez-un-projet-collaboratif-en-int-grant-une-demarche-CI-CD \
+            -Dsonar.organization=elducche \
+            -Dsonar.host.url=https://sonarcloud.io
+      
+      - name: Summary
+        run: |
+          echo "✅ SonarQube backend analysis completed!"
+          echo "📊 Results available on SonarCloud.io"
