@@ -31,6 +31,8 @@ export class AppComponent implements OnInit {
     this.getRandomJoke();
   }
 
+  // Test modification to trigger CI
+
   // Fetch a random joke from the service
   public getRandomJoke(): void {
     this.jokesService.getRandomJoke();
