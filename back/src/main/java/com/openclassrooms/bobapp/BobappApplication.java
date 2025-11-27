@@ -10,4 +10,5 @@ public class BobappApplication {
 		SpringApplication.run(BobappApplication.class, args);
 	}
 
+	// Test modification to trigger CI
 }
