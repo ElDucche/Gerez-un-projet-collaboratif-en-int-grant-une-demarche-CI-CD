@@ -1,0 +1,106 @@
+name: Frontend Docker Build & Push
+
+on:
+  workflow_run:
+    workflows: ["Frontend CI"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  frontend-docker-deploy:
+    name: Construction et Publication Docker Frontend
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    
+    steps:
+      - name: Récupération du code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
+      
+      - name: Configuration de Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      
+      - name: Connexion à Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      - name: Extraction des métadonnées pour le frontend
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/bobapp-frontend
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+      
+      - name: Construction de l'image Docker frontend pour tests
+        uses: docker/build-push-action@v4
+        with:
+          context: ./front
+          file: ./front/Dockerfile
+          load: true
+          tags: bobapp-frontend:test
+          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/bobapp-frontend:buildcache
+      
+      - name: Smoke tests de l'image Docker frontend
+        run: |
+          echo "🐳 Démarrage du conteneur frontend pour tests de fumée..."
+          docker run -d -p 80:80 --name test-frontend bobapp-frontend:test
+          
+          echo "⏳ Attente du démarrage du service frontend (30 secondes)..."
+          sleep 30
+          
+          echo "🔍 Exécution des tests de fumée frontend..."
+          
+          # Test 1: Frontend accessible
+          if curl -f http://localhost:80 > /dev/null 2>&1; then
+            echo "✅ Test 1/1: Frontend accessible"
+          else
+            echo "❌ Test 1/1: Frontend non accessible"
+            docker logs test-frontend
+            docker stop test-frontend
+            docker rm test-frontend
+            exit 1
+          fi
+          
+          echo "🧹 Nettoyage du conteneur de test frontend..."
+          docker stop test-frontend
+          docker rm test-frontend
+          
+          echo ""
+          echo "✅ Tous les smoke tests frontend sont passés avec succès!"
+          echo "🚀 L'image frontend est prête pour publication sur Docker Hub"
+      
+      - name: Publication de l'image Docker frontend sur Docker Hub
+        uses: docker/build-push-action@v4
+        with:
+          context: ./front
+          file: ./front/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/bobapp-frontend:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/bobapp-frontend:buildcache,mode=max
+      
+      - name: Résumé de la publication frontend
+        run: |
+          echo "✅ Pipeline de déploiement Docker frontend terminée avec succès!"
+          echo ""
+          echo "🧪 Smoke tests passés: 1/1"
+          echo "   ✓ Frontend accessible"
+          echo ""
+          echo "🐳 Image Docker frontend publiée sur Docker Hub:"
+          echo "📦 Application: ${{ secrets.DOCKERHUB_USERNAME }}/bobapp-frontend"
+          echo ""
+          echo "🏷️ Tags:"
+          echo "${{ steps.meta.outputs.tags }}"
+          echo ""
+          echo "🚀 Pour lancer le frontend:"
+          echo "docker run -p 80:80 ${{ secrets.DOCKERHUB_USERNAME }}/bobapp-frontend:latest"
+          echo ""
+          echo "🌐 Endpoint disponible:"
+          echo "   • Frontend: http://localhost:80"
