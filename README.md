@@ -1,61 +1,113 @@
-# BobApp - CI/CD Optimized
+# BobApp - Application de Blagues avec CI/CD
 
-**CI/CD Pipeline avec Smoke Tests et Réutilisation d'Artifacts**
+![BobApp Logo](logo-bobapp.png)
 
-Clone project:
+BobApp est une application web qui permet aux utilisateurs de lire et partager des blagues du jour. Après 3 ans d'existence, l'application a besoin d'une refonte de son processus de développement pour améliorer la qualité du code et faciliter les déploiements.
 
-> git clone XXXXX
+## 🚀 Pipeline CI/CD Mis en Place
 
-📊 Voir [strategie-test.md](strategie-test.md) pour la stratégie de tests
+Notre pipeline CI/CD automatisé permet de :
+- ✅ Valider les tests unitaires sur chaque pull request
+- 🔍 Analyser la qualité du code avec SonarQube
+- 📦 Générer automatiquement les rapports de couverture
+- 🐳 Déployer les conteneurs sur Docker Hub
 
-## Front-end 
+### Workflow CI/CD
 
-Go inside folder the front folder:
+```
+Développeur
+    ├── Modifie back/ ou front/
+    ├── Push → déclenche CI
+    ├── CI + SonarQube réussissent
+    ├── Crée PR vers main
+    ├── Required checks passent
+    └── PR mergée → Docker deploy
+```
 
-> cd front
+## 🛠 Technologies
 
-Install dependencies:
+- **Backend** : Spring Boot (Java 11)
+- **Frontend** : Angular
+- **CI/CD** : GitHub Actions
+- **Qualité** : SonarCloud
+- **Conteneurs** : Docker Hub
 
-> npm install
+## ▶️ Installation et Lancement Local
 
-Launch Front-end:
+### Front-end 
 
-> npm run start;
+Aller dans le dossier front :
+```bash
+cd front
+```
 
-### Docker
+Installer les dépendances :
+```bash
+npm install
+```
 
-Build the container:
+Lancer l'application :
+```bash
+npm run start
+```
 
-> docker build -t bobapp-front .  
+### Back-end
 
-Start the container:
+Aller dans le dossier back :
+```bash
+cd back
+```
 
-> docker run -p 8080:8080 --name bobapp-front -d bobapp-front
+Installer les dépendances :
+```bash
+mvn clean install
+```
 
-## Back-end
+Lancer le backend :
+```bash
+mvn spring-boot:run
+```
 
-Go inside folder the back folder:
+Lancer les tests :
+```bash
+mvn clean test
+```
 
-> cd back
+## 🐳 Docker
 
-Install dependencies:
+### Frontend
+```bash
+# Build
+docker build -t bobapp-frontend .
 
-> mvn clean install
+# Run
+docker run -p 80:80 --name bobapp-frontend -d bobapp-frontend
+```
 
-Launch Back-end:
+### Backend
+```bash
+# Build
+docker build -t bobapp-backend .
 
->  mvn spring-boot:run
+# Run
+docker run -p 8080:8080 --name bobapp-backend -d bobapp-backend
+```
 
-Launch the tests:
+## 📊 Documentation Complémentaire
 
-> mvn clean install
+- 📋 [strategie-test.md](strategie-test.md) - Stratégie de tests
+- 📄 [@livrables/etape5-document-explicatif.md](/Users/guillaumeleduc/Documents/OPC/Projet10-CI-CD/Gerez-un-projet-collaboratif-en-int-grant-une-demarche-CI-CD/@livrables/etape5-document-explicatif.md) - Document explicatif CI/CD
+- 📖 [@sources/etapes.md](/Users/guillaumeleduc/Documents/OPC/Projet10-CI-CD/sources/etapes.md) - Étapes du projet
+- 📖 [@sources/scenario.md](/Users/guillaumeleduc/Documents/OPC/Projet10-CI-CD/sources/scenario.md) - Scénario et contexte
 
-### Docker
+## 🤝 Contribution
 
-Build the container:
+Le projet suit une approche CI/CD stricte :
+1. Travailler sur une branche feature
+2. Push pour déclencher les tests automatiques
+3. Créer une PR vers main après succès des tests
+4. La PR est mergée seulement si tous les checks passent
 
-> docker build -t bobapp-back .  
+## 📞 Support
 
-Start the container:
-
-> docker run -p 8080:8080 --name bobapp-back -d bobapp-back # Test de protection de branche
+Pour tout problème technique ou question, merci de créer une issue sur GitHub.
