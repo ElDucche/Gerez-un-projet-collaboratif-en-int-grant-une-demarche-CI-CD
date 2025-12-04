@@ -2,13 +2,9 @@ name: Frontend CI
 
 on:
   push:
-    branches-ignore: [main]
-    paths:
-      - 'front/**'
+    branches: [main]
   pull_request:
     branches: [main]
-    paths:
-      - 'front/**'
 
 jobs:
   frontend-validation:
