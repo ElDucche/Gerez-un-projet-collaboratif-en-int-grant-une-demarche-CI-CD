@@ -18,6 +18,7 @@
 		<sonar.organization>elducche</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 	</properties>
+	<!-- Dépendances -->
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
