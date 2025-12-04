@@ -93,13 +93,6 @@ docker build -t bobapp-backend .
 docker run -p 8080:8080 --name bobapp-backend -d bobapp-backend
 ```
 
-## 📊 Documentation Complémentaire
-
-- 📋 [strategie-test.md](strategie-test.md) - Stratégie de tests
-- 📄 [@livrables/etape5-document-explicatif.md](/Users/guillaumeleduc/Documents/OPC/Projet10-CI-CD/Gerez-un-projet-collaboratif-en-int-grant-une-demarche-CI-CD/@livrables/etape5-document-explicatif.md) - Document explicatif CI/CD
-- 📖 [@sources/etapes.md](/Users/guillaumeleduc/Documents/OPC/Projet10-CI-CD/sources/etapes.md) - Étapes du projet
-- 📖 [@sources/scenario.md](/Users/guillaumeleduc/Documents/OPC/Projet10-CI-CD/sources/scenario.md) - Scénario et contexte
-
 ## 🤝 Contribution
 
 Le projet suit une approche CI/CD stricte :
