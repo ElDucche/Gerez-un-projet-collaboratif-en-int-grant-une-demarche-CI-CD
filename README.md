@@ -1,8 +1,6 @@
 # BobApp - Application de Blagues avec CI/CD
 
-![BobApp Logo](logo-bobapp.png)
-
-BobApp est une application web qui permet aux utilisateurs de lire et partager des blagues du jour. Après 3 ans d'existence, l'application a besoin d'une refonte de son processus de développement pour améliorer la qualité du code et faciliter les déploiements.
+BobApp est une application web qui permet aux utilisateurs de lire et partager des blagues du jour.
 
 ## 🚀 Pipeline CI/CD Mis en Place
 
