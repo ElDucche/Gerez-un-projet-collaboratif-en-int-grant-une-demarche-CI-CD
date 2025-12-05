@@ -1,22 +1,17 @@
 name: Frontend Docker Build & Push
 
 on:
-  workflow_run:
-    workflows: ["Frontend CI"]
-    types: [completed]
+  push:
     branches: [main]
 
 jobs:
   frontend-docker-deploy:
     name: Construction et Publication Docker Frontend
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     
     steps:
       - name: Récupération du code
         uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.workflow_run.head_branch }}
       
       - name: Configuration de Docker Buildx
         uses: docker/setup-buildx-action@v2
