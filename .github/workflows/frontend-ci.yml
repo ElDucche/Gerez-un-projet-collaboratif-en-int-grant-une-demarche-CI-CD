@@ -125,7 +125,7 @@ jobs:
           echo "🔍 Running SonarQube analysis..."
           npm install -g sonarqube-scanner
           sonar-scanner \
-            -Dsonar.projectKey=ElDucche_Gerez-un-projet-collaboratif-en-int-grant-une-demarche-CI-CD \
+            -Dsonar.projectKey=ElDucche_Gerez-un-projet-collaboratif-en-int-grant-une-demarche-CI-CD-frontend \
             -Dsonar.organization=elducche \
             -Dsonar.sources=src \
             -Dsonar.tests=src \

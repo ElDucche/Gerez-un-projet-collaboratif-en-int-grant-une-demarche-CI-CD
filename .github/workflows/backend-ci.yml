@@ -107,7 +107,7 @@ jobs:
         run: |
           echo "🔍 Running SonarQube analysis..."
           mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            -Dsonar.projectKey=ElDucche_Gerez-un-projet-collaboratif-en-int-grant-une-demarche-CI-CD \
+            -Dsonar.projectKey=ElDucche_Gerez-un-projet-collaboratif-en-int-grant-une-demarche-CI-CD-backend \
             -Dsonar.organization=elducche \
             -Dsonar.host.url=https://sonarcloud.io
       
